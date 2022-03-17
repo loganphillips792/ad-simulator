@@ -82,16 +82,6 @@ const PlusIcon = styled(FontAwesomeIcon)`
   font-size: 50px;
 `;
 
-
-// const Widget = styled.div`
-//   background-color: white;
-//   border: 2px solid red;
-// `;
-
-
-
-
-
 function App() {
   return (
     <Container>
@@ -121,28 +111,6 @@ function App() {
 
       <ColumnTwo />
     </Container>
-
-    // <Container>
-    //   <WidgetsPreviewContainer>
-    //     <WidgetsContainer>
-    //       <WidgetsGrid>
-    //         <Widget>
-    //           <WidgetsLinkRow>
-    //             <WebsiteLinkContainer>WEBSITE</WebsiteLinkContainer>
-    //             <InstagramLinkContainer>InstagramLinkContainer</InstagramLinkContainer>
-    //             <AdLibraryLinkContainer>AD LIBARRA</AdLibraryLinkContainer>
-    //             <TikTokLinkContainer>TIK TOK LIBARARY</TikTokLinkContainer>
-    //           </WidgetsLinkRow>
-    //         </Widget>
-    //         <Widget>Two</Widget>
-    //         <Widget>Three</Widget>
-    //         <Widget>Four</Widget>
-    //       </WidgetsGrid>
-    //       <FontAwesomeIcon icon={faPlus} />
-    //     </WidgetsContainer>
-    //     <PreviewContainer />
-    //   </WidgetsPreviewContainer>
-    // </Container>
   );
 }
 
