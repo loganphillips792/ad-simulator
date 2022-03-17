@@ -2,95 +2,147 @@ import logo from './logo.svg';
 import './App.css';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
-const Container = styled.div``;
 
-const WidgetsPreviewContainer = styled.div`
+const Container = styled.div`
   display: flex;
+  height: 100vh;
 
+  // Make the 2 columns take up entire screen
   & > * {
     flex: 1;
   }
-
 `;
 
-const WidgetsContainer = styled.div`
+
+const ColumnOne = styled.div`
   background-color: grey;
-  margin-right: 2px;
+  border: 2px solid blue;
+  margin-right: 5px;
+  //   margin-right: 2px;
+`;
+
+const Grid = styled.div`
+  display: flex;
+  
+  & > * {
+    flex: 1;
+    margin: 25px;
+  }
+`;
+
+const Website = styled.div`
+  position: relative;
+  background-color: white;
+  border: 2px solid red;
+  height: 150px;
+  width: 50px;
 `;
 
 
-const WidgetsGrid = styled.div`
+
+
+const Links = styled.div`
   display: flex;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
 
   & > * {
     flex: 1;
   }
 `;
 
-const WidgetsLinkRow = styled.div`
-  display: flex;
-`;
-
-const LinkContainer = styled.div`
+const Link = styled.div`
   border-radius: 5px;
 `;
 
-const WebsiteLinkContainer = styled(LinkContainer)`
+const WebsiteLinkContainer = styled(Link)`
   background-color: yellow;
 `;
 
-const InstagramLinkContainer = styled(LinkContainer)`
+const InstagramLinkContainer = styled(Link)`
   background-color: pink;
 `;
 
-const AdLibraryLinkContainer = styled(LinkContainer)`
+const AdLibraryLinkContainer = styled(Link)`
   background-color: blue;
 `;
 
-const TikTokLinkContainer = styled(LinkContainer)`
+const TikTokLinkContainer = styled(Link)`
   background-color: orange;
 `;
 
-const Widget = styled.div`
-  background-color: white;
-  border: 2px solid red;
-`;
-
-
-const PreviewContainer = styled.div`
+const ColumnTwo = styled.div`
   background-color: grey;
 `;
+
+const PlusIcon = styled(FontAwesomeIcon)`
+  font-size: 50px;
+`;
+
+
+// const Widget = styled.div`
+//   background-color: white;
+//   border: 2px solid red;
+// `;
+
+
 
 
 
 function App() {
   return (
     <Container>
-      hello
-      
-
-      <WidgetsPreviewContainer>
-        <WidgetsContainer>
-
-         <WidgetsGrid>
-           <Widget>
-             <WidgetsLinkRow>
+      <ColumnOne>
+        <Grid>
+          <Website>
+            <span>Google.com</span>
+            <Links>
               <WebsiteLinkContainer>WEBSITE</WebsiteLinkContainer>
-              <InstagramLinkContainer>InstagramLinkContainer</InstagramLinkContainer>
-              <AdLibraryLinkContainer>AD LIBARRA</AdLibraryLinkContainer>
-              <TikTokLinkContainer>TIK TOK LIBARARY</TikTokLinkContainer>
-             </WidgetsLinkRow>
-           </Widget>
-           <Widget>Two</Widget>
-         </WidgetsGrid>
+              <InstagramLinkContainer>Instagram</InstagramLinkContainer>
+              <AdLibraryLinkContainer>AD LIBRARY</AdLibraryLinkContainer>
+              <TikTokLinkContainer>TIK TOK</TikTokLinkContainer>
+            </Links>
+          </Website>
 
-          <FontAwesomeIcon icon="fa-solid fa-plus" />
-        </WidgetsContainer>
-        <PreviewContainer />
-      </WidgetsPreviewContainer>
+          <Website>
+            <Links>
+                <WebsiteLinkContainer>WEBSITE</WebsiteLinkContainer>
+                <InstagramLinkContainer>Instagram</InstagramLinkContainer>
+                <AdLibraryLinkContainer>AD LIBRARY</AdLibraryLinkContainer>
+                <TikTokLinkContainer>TIK TOK</TikTokLinkContainer>
+            </Links>
+          </Website>
+        </Grid>
+        <PlusIcon icon={faPlus} />
+      </ColumnOne>
 
+      <ColumnTwo />
     </Container>
+
+    // <Container>
+    //   <WidgetsPreviewContainer>
+    //     <WidgetsContainer>
+    //       <WidgetsGrid>
+    //         <Widget>
+    //           <WidgetsLinkRow>
+    //             <WebsiteLinkContainer>WEBSITE</WebsiteLinkContainer>
+    //             <InstagramLinkContainer>InstagramLinkContainer</InstagramLinkContainer>
+    //             <AdLibraryLinkContainer>AD LIBARRA</AdLibraryLinkContainer>
+    //             <TikTokLinkContainer>TIK TOK LIBARARY</TikTokLinkContainer>
+    //           </WidgetsLinkRow>
+    //         </Widget>
+    //         <Widget>Two</Widget>
+    //         <Widget>Three</Widget>
+    //         <Widget>Four</Widget>
+    //       </WidgetsGrid>
+    //       <FontAwesomeIcon icon={faPlus} />
+    //     </WidgetsContainer>
+    //     <PreviewContainer />
+    //   </WidgetsPreviewContainer>
+    // </Container>
   );
 }
 
