@@ -11,13 +11,18 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rs/cors"
 )
 
 var db *sql.DB
 
-type Website struct {
-	Id  int    `json:"id"`
-	Url string `json:"url"`
+type WebsiteInfo struct {
+	Id           int            `json:"id"`
+	BrandName    sql.NullString `json:"brand_name"`
+	WebsiteUrl   sql.NullString `json:"website_url"`
+	InstagramUrl sql.NullString `json:"instagram_url"`
+	AdsLibrayUrl sql.NullString `json:"ads_library_url"`
+	TiktokUrl    sql.NullString `json:"tiktok_url"`
 }
 
 func initializeDatabase() {
@@ -57,39 +62,96 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT * FROM websites")
+	r.HandleFunc("/websiteinfo/", CreateWebsiteHandler).Methods("POST")
+	r.HandleFunc("/hello", GetAllWebsitesHandler).Methods("GET")
+	r.HandleFunc("/websiteinfo/{id}", UpdateWebsiteInfo).Methods("PUT")
+	r.HandleFunc("/websiteinfo/{id}", DeleteWebsiteInfo).Methods("DELETE")
 
-		defer rows.Close()
+	c := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+	})
+
+	handler := c.Handler(r)
+
+	log.Fatal(http.ListenAndServe(":8000", handler))
+}
+
+func CreateWebsiteHandler(w http.ResponseWriter, r *http.Request) {
+	updateWebsiteInfoSQL := "INSERT INTO websites (brand_name, website_url, instagram_url, ads_library_url, tiktok_url) VALUES (?, ?, ?, ?, ?)"
+
+	statement, err := db.Prepare(updateWebsiteInfoSQL)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_, err = statement.Exec(sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{})
+
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func GetAllWebsitesHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT * FROM websites")
+
+	defer rows.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var websites []WebsiteInfo
+	for rows.Next() {
+		var website WebsiteInfo
+
+		err := rows.Scan(&website.Id, &website.BrandName, &website.WebsiteUrl, &website.InstagramUrl, &website.AdsLibrayUrl, &website.TiktokUrl)
 
 		if err != nil {
 			log.Fatal(err)
 		}
+		websites = append(websites, website)
+	}
 
-		var websites []Website
+	err = json.NewEncoder(w).Encode(websites)
+	w.Header().Set("Content-Type", "application/json")
 
-		for rows.Next() {
-			var website Website
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-			err := rows.Scan(&website.Id, &website.Url)
+func UpdateWebsiteInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
 
-			if err != nil {
-				log.Fatal(err)
-			}
-			websites = append(websites, website)
-		}
+	var website WebsiteInfo
 
-		//err = json.NewEncoder(w).Encode(websites)
-		response, _ := json.Marshal(websites)
+	err := json.NewDecoder(r.Body).Decode(&website)
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
-		w.Write(response)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-		if err != nil {
-			log.Fatal(err)
-		}
-	}).Methods("GET")
+	updateWebsiteInfoSQL := "UPDATE websites SET brand_name = ? WHERE id = ?"
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	statement, err := db.Prepare(updateWebsiteInfoSQL)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_, err = statement.Exec(website.BrandName, vars["id"])
+
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func DeleteWebsiteInfo(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	updateWebsiteInfoSQL := "DELETE FROM websites WHERE id = ?"
+
+	statement, err := db.Prepare(updateWebsiteInfoSQL)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	_, err = statement.Exec(vars["id"])
+
+	w.Header().Set("Content-Type", "application/json")
 }
