@@ -12,20 +12,43 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
 )
-
-var db *sql.DB
 
 type WebsiteInfo struct {
 	Id           int            `json:"id"`
-	BrandName    sql.NullString `json:"brand_name"`
+	BrandName    NullString     `json:"brand_name"`
 	WebsiteUrl   sql.NullString `json:"website_url"`
 	InstagramUrl sql.NullString `json:"instagram_url"`
 	AdsLibrayUrl sql.NullString `json:"ads_library_url"`
 	TiktokUrl    sql.NullString `json:"tiktok_url"`
 }
 
-func initializeDatabase() {
+type NullString struct {
+	sql.NullString
+}
+
+type Handler struct {
+	logger *zap.SugaredLogger
+	dbConn *sql.DB
+}
+
+func (v *NullString) UnmarshalJSON(data []byte) error {
+	// Unmarshalling into a pointer will let us detect null
+	var x *string
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+	if x != nil {
+		v.Valid = true
+		v.String = *x
+	} else {
+		v.Valid = false
+	}
+	return nil
+}
+
+func initializeDatabase() *sql.DB {
 	file, err := os.Create("data.db")
 
 	if err != nil {
@@ -33,7 +56,7 @@ func initializeDatabase() {
 	}
 	file.Close()
 
-	db, err = sql.Open("sqlite3", "./data.db")
+	db, err := sql.Open("sqlite3", "./data.db")
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -54,18 +77,26 @@ func initializeDatabase() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	return db
 }
 
 func main() {
-	initializeDatabase()
+	db := initializeDatabase()
 	defer db.Close()
+
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/websiteinfo/", CreateWebsiteHandler).Methods("POST")
-	r.HandleFunc("/hello", GetAllWebsitesHandler).Methods("GET")
-	r.HandleFunc("/websiteinfo/{id}", UpdateWebsiteInfo).Methods("PUT")
-	r.HandleFunc("/websiteinfo/{id}", DeleteWebsiteInfo).Methods("DELETE")
+	envHandler := &Handler{logger: sugar, dbConn: db}
+
+	r.HandleFunc("/websiteinfo/", envHandler.CreateWebsiteHandler).Methods("POST")
+	r.HandleFunc("/websiteinfo", envHandler.GetAllWebsitesHandler).Methods("GET")
+	r.HandleFunc("/websiteinfo/{id}", envHandler.UpdateWebsiteHandler).Methods("PUT")
+	r.HandleFunc("/websiteinfo/{id}", envHandler.DeleteWebsiteHandler).Methods("DELETE")
 
 	c := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
@@ -76,21 +107,37 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8000", handler))
 }
 
-func CreateWebsiteHandler(w http.ResponseWriter, r *http.Request) {
-	updateWebsiteInfoSQL := "INSERT INTO websites (brand_name, website_url, instagram_url, ads_library_url, tiktok_url) VALUES (?, ?, ?, ?, ?)"
+func (handler *Handler) CreateWebsiteHandler(w http.ResponseWriter, r *http.Request) {
+	query := "INSERT INTO websites (brand_name, website_url, instagram_url, ads_library_url, tiktok_url) VALUES (?, ?, ?, ?, ?)"
 
-	statement, err := db.Prepare(updateWebsiteInfoSQL)
+	var websiteToCreate WebsiteInfo
+
+	err := json.NewDecoder(r.Body).Decode(&websiteToCreate)
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	_, err = statement.Exec(sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{})
+
+	handler.logger.Infow("Running SQL statement",
+		"website", websiteToCreate,
+		"SQL", query,
+	)
+
+	_, err = handler.dbConn.Exec(query, sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{}, sql.NullString{})
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	w.Header().Set("Content-Type", "application/json")
+
 }
 
-func GetAllWebsitesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT * FROM websites")
+func (handler *Handler) GetAllWebsitesHandler(w http.ResponseWriter, r *http.Request) {
+
+	handler.logger.Infow("GETTING ALL WEBSITES")
+
+	rows, err := handler.dbConn.Query("SELECT * FROM websites")
 
 	defer rows.Close()
 
@@ -118,7 +165,7 @@ func GetAllWebsitesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdateWebsiteInfo(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) UpdateWebsiteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	var website WebsiteInfo
@@ -131,7 +178,7 @@ func UpdateWebsiteInfo(w http.ResponseWriter, r *http.Request) {
 
 	updateWebsiteInfoSQL := "UPDATE websites SET brand_name = ? WHERE id = ?"
 
-	statement, err := db.Prepare(updateWebsiteInfoSQL)
+	statement, err := handler.dbConn.Prepare(updateWebsiteInfoSQL)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -141,12 +188,12 @@ func UpdateWebsiteInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 }
 
-func DeleteWebsiteInfo(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) DeleteWebsiteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	updateWebsiteInfoSQL := "DELETE FROM websites WHERE id = ?"
 
-	statement, err := db.Prepare(updateWebsiteInfoSQL)
+	statement, err := handler.dbConn.Prepare(updateWebsiteInfoSQL)
 
 	if err != nil {
 		log.Fatal(err.Error())
