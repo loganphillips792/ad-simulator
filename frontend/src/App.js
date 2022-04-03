@@ -245,10 +245,11 @@ function App() {
           {websiteInfo.map(function (website, index) {
             return (
               <Website key={index}>
+                { console.log("FOCUSED", isNameFocused) }
                 <DeleteIcon icon={faXmark} onClick={() => handleDelete(website.id)} />    
-                <div class="input-container">
+                <div className="input-container">
                   {!isNameFocused ? (
-                    <Typography onClick={() => { setIsNamedFocused(true) }}>
+                    <Typography onClick={() => { setIsNamedFocused(true); }}>
                       {website.brand_name.String}
                     </Typography>
                   ) : (
