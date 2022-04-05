@@ -166,6 +166,8 @@ func (handler *Handler) GetAllWebsitesHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (handler *Handler) UpdateWebsiteHandler(w http.ResponseWriter, r *http.Request) {
+	query := "UPDATE websites SET brand_name = ? WHERE id = ?"
+
 	vars := mux.Vars(r)
 
 	var website WebsiteInfo
@@ -176,9 +178,12 @@ func (handler *Handler) UpdateWebsiteHandler(w http.ResponseWriter, r *http.Requ
 		log.Fatal(err.Error())
 	}
 
-	updateWebsiteInfoSQL := "UPDATE websites SET brand_name = ? WHERE id = ?"
+	handler.logger.Infow("Running SQL statement",
+		"website", website,
+		"SQL", query,
+	)
 
-	statement, err := handler.dbConn.Prepare(updateWebsiteInfoSQL)
+	statement, err := handler.dbConn.Prepare(query)
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -186,14 +191,20 @@ func (handler *Handler) UpdateWebsiteHandler(w http.ResponseWriter, r *http.Requ
 	_, err = statement.Exec(website.BrandName, vars["id"])
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"msg":"Update successful"}`))
 }
 
 func (handler *Handler) DeleteWebsiteHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	updateWebsiteInfoSQL := "DELETE FROM websites WHERE id = ?"
+	query := "DELETE FROM websites WHERE id = ?"
 
-	statement, err := handler.dbConn.Prepare(updateWebsiteInfoSQL)
+	handler.logger.Infow("Running SQL statement",
+		"website to delete", vars["id"],
+		"SQL", query,
+	)
+
+	statement, err := handler.dbConn.Prepare(query)
 
 	if err != nil {
 		log.Fatal(err.Error())

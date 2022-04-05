@@ -1,18 +1,13 @@
 import { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import styled, { createGlobalStyle } from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
-import {
-  Editable,
-  EditableInput,
-  EditableTextarea,
-  EditablePreview,
-} from "@chakra-ui/react";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { usePopper } from 'react-popper';
+import Tooltip from '@mui/material/Tooltip';
+
 
 
 const GlobalStyle = createGlobalStyle`
@@ -37,6 +32,10 @@ const Container = styled.div`
 const ColumnOne = styled.div`
   margin-right: 5px;
   padding: 15px;
+
+  .icon-container {
+    display: inline-block;
+  }
 `;
 
 const Grid = styled.div`
@@ -113,7 +112,7 @@ const PlusIcon = styled(FontAwesomeIcon)`
   font-size: 50px;
 `;
 
-const Tooltip = styled.div`
+const CustomTooltip = styled.div`
   display: inline-block;
   background-color: #FFFFFF;
   color: #643045;
@@ -123,7 +122,7 @@ const Tooltip = styled.div`
   border-radius: 4px;
 `;
 
-const Arrow = styled.div`
+const CustomArrow = styled.div`
   position: absolute;
   width: 10px;
   height: 10px;
@@ -162,11 +161,11 @@ function App() {
   const [arrowElement, setArrowElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     modifiers: [
-      { 
-        name: 'arrow', 
-        options: { 
+      {
+        name: 'arrow',
+        options: {
           element: arrowElement
-       }
+        }
       },
       {
         name: "offset",
@@ -178,7 +177,6 @@ function App() {
   });
 
   const [showPopper, setShowPopper] = useState(false);
-
 
   useEffect(() => {
     fetch("http://localhost:8000/websiteinfo")
@@ -245,8 +243,8 @@ function App() {
           {websiteInfo.map(function (website, index) {
             return (
               <Website key={index}>
-                { console.log("FOCUSED", isNameFocused) }
-                <DeleteIcon icon={faXmark} onClick={() => handleDelete(website.id)} />    
+                {console.log("FOCUSED", isNameFocused)}
+                <DeleteIcon icon={faXmark} onClick={() => handleDelete(website.id)} />
                 <div className="input-container">
                   {!isNameFocused ? (
                     <Typography onClick={() => { setIsNamedFocused(true); }}>
@@ -271,16 +269,21 @@ function App() {
                 </Links>
 
                 {showPopper && (
-                   <Tooltip ref={setPopperElement} style={styles.popper} {...attributes.popper}>
-                   Popper element
-                   <Arrow ref={setArrowElement} style={styles.arrow} />
-                 </Tooltip>
+                  <CustomTooltip ref={setPopperElement} style={styles.popper} {...attributes.popper}>
+                    Popper element
+                    <CustomArrow ref={setArrowElement} style={styles.arrow} />
+                  </CustomTooltip>
                 )}
               </Website>
             )
           })}
         </Grid>
-        <PlusIcon icon={faPlus} onClick={handleCreateNewWebsite} />
+
+        <Tooltip title="Hello">
+          <div className="icon-container">
+            <PlusIcon icon={faPlus} onClick={handleCreateNewWebsite} />
+          </div>
+        </Tooltip>
       </ColumnOne>
 
       <ColumnTwo />
