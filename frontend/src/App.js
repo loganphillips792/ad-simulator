@@ -152,7 +152,8 @@ function App() {
   const [websiteInfo, setWebsiteInfo] = useState([]);
   const [update, setUpdate] = useState(false);
   // const [isNameFocused, setIsNamedFocused] = useState(false);
-  const [isNameFocused, setIsNamedFocused] = useState(false);
+  // const [isNameFocused, setIsNamedFocused] = useState(false);
+  const [isNameFocused, setIsNamedFocused] = useState([]);
 
 
   // popover
@@ -240,22 +241,26 @@ function App() {
       <GlobalStyle />
       <ColumnOne>
         <Grid>
+          {console.log("NAMED FOCUSED", isNameFocused)}
           {websiteInfo.map(function (website, index) {
             return (
               <Website key={index}>
                 {console.log("FOCUSED", isNameFocused)}
                 <DeleteIcon icon={faXmark} onClick={() => handleDelete(website.id)} />
                 <div className="input-container">
-                  {!isNameFocused ? (
-                    <Typography onClick={() => { setIsNamedFocused(true); }}>
+                  {!isNameFocused[index] ? (
+                    // <Typography onClick={() => { setIsNamedFocused(true); }}>
+                    //   {website.brand_name.String}
+                    // </Typography>
+                    <Typography onClick={() => { setIsNamedFocused(oldArray => [...oldArray, { id: index, isFocused: true }]); }}>
                       {website.brand_name.String}
                     </Typography>
                   ) : (
                     <TextField
                       autoFocus
                       defaultValue={website.brand_name.String}
-                      //onChange={(value) => handleWebsiteNameUpdate(website.id, value)}
-                      onBlur={e => { setIsNamedFocused(false); handleWebsiteNameUpdate(website.id, e.target.value); }}
+                      onChange={(e) => handleWebsiteNameUpdate(website.id, e.target.value)}
+                      // onBlur={e => { setIsNamedFocused(false); handleWebsiteNameUpdate(website.id, e.target.value); }}
                       variant="standard"
                     />
                   )}
@@ -268,12 +273,12 @@ function App() {
                   <TikTokLinkContainer>TIK TOK</TikTokLinkContainer>
                 </Links>
 
-                {showPopper && (
+                {/* {showPopper && (
                   <CustomTooltip ref={setPopperElement} style={styles.popper} {...attributes.popper}>
                     Popper element
                     <CustomArrow ref={setArrowElement} style={styles.arrow} />
                   </CustomTooltip>
-                )}
+                )} */}
               </Website>
             )
           })}
