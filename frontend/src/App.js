@@ -8,15 +8,11 @@ import Typography from "@mui/material/Typography";
 import { usePopper } from 'react-popper';
 import Tooltip from '@mui/material/Tooltip';
 
-
-
 const GlobalStyle = createGlobalStyle`
   body {
     background-color: #272932;
   }
 `;
-
-
 
 const Container = styled.div`
   display: flex;
@@ -27,7 +23,6 @@ const Container = styled.div`
     flex: 1;
   }
 `;
-
 
 const ColumnOne = styled.div`
   margin-right: 5px;
@@ -42,30 +37,25 @@ const Grid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-
-  // display: flex;
-  // flex-wrap: wrap;
-  
-  // & > * {
-  //   flex: 1;
-  //   margin: 25px;
-  // }
 `;
 
 const Website = styled.div`
   position: relative;
   background-color: #828489;
   height: 100px;
-  //width: 50px;
   border-radius: 10px;
+  border: 3px solid #828489;
 
   .input-container {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
   }
-`;
 
+  &:hover {
+    border: 3px solid #5da6f5;
+  }
+`;
 
 const DeleteIcon = styled(FontAwesomeIcon)`
   position: absolute;
@@ -80,6 +70,8 @@ const Links = styled.div`
   width: 100%;
   position: absolute;
   bottom: 0;
+  font-size: 12px;
+  text-align: center;
 
   & > * {
     flex: 1;
@@ -106,7 +98,9 @@ const TikTokLinkContainer = styled(Link)`
   background-color: #517F98;
 `;
 
-const ColumnTwo = styled.div``;
+const ColumnTwo = styled.div`
+  border: 2px solid red;
+`;
 
 const PlusIcon = styled(FontAwesomeIcon)`
   font-size: 50px;
@@ -291,7 +285,9 @@ function App() {
         </Tooltip>
       </ColumnOne>
 
-      <ColumnTwo />
+      <ColumnTwo>
+        <iframe src="https://bonobos.com/" title="W3Schools Free Online Web Tutorials"></iframe>
+      </ColumnTwo>
     </Container>
   );
 }
